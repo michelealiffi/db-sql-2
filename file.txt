@@ -1,0 +1,151 @@
+GROUP BY
+1. Contare quanti iscritti ci sono stati ogni anno
+
+SELECT
+    COUNT(`id`) AS 'n_students', YEAR(`enrolment_date`) AS 'enrolment_year'
+FROM
+    `students`
+GROUP BY 
+	enrolment_year;
+    
+
+2. Contare gli insegnanti che hanno l'ufficio nello stesso edificio
+
+SELECT
+    COUNT(`id`) AS 'n_teachers', `office_address`
+FROM
+    `teachers`
+GROUP BY 
+	`office_address`;
+
+
+3. Calcolare la media dei voti di ogni appello d'esame
+
+SELECT
+    `exam_id`, AVG(`vote`) AS 'vote_average'
+FROM
+    `exam_student`
+GROUP BY
+	`exam_id`;
+
+
+4. Contare quanti corsi di laurea ci sono per ogni dipartimento
+
+SELECT
+    COUNT(`id`) AS 'n_degrees', `department_id`
+FROM
+    `degrees`
+GROUP BY
+	`department_id`;
+
+
+JOIN
+1. Selezionare tutti gli studenti iscritti al Corso di Laurea in Economia
+
+SELECT
+    *
+FROM
+    `students`
+INNER JOIN `degrees` ON `degrees`.`id` = `students`.`degree_id`
+WHERE 
+  `degrees`.`name` = 'Corso di Laurea in Economia';
+    
+
+2. Selezionare tutti i Corsi di Laurea Magistrale del Dipartimento di
+Neuroscienze
+
+SELECT
+    *
+FROM
+    `degrees`
+INNER JOIN `departments` ON `departments`.`id` = `degrees`.`department_id`
+WHERE 
+  `departments`.`id` = 7 AND `degrees`.`level` = 'magistrale';
+
+
+3. Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
+
+SELECT
+    *
+FROM
+    `courses`
+INNER JOIN `teachers` ON `teachers`.`id`
+INNER JOIN `course_teacher` ON `course_teacher`.`course_id`
+WHERE
+    `teachers`.`id` = 44;
+
+
+4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e nome
+
+SELECT
+    *
+FROM
+    departments dep
+JOIN DEGREES deg ON
+    dep.id = deg.department_id
+JOIN students s ON
+    deg.id = s.degree_id
+ORDER BY
+    s.surname,
+    s.name ASC;
+
+5. Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
+
+SELECT
+    *
+FROM
+    DEGREES deg
+JOIN courses c ON
+    deg.id = c.degree_id
+JOIN course_teacher ct ON
+    c.id = ct.course_id
+JOIN teachers t ON
+    ct.teacher_id = t.id
+ORDER BY
+    deg.name ASC;
+
+6. Selezionare tutti i docenti che insegnano nel Dipartimento di
+Matematica (54)
+
+SELECT DISTINCT
+    t.*
+FROM
+    teachers t
+JOIN course_teacher ct ON
+    t.id = ct.teacher_id
+JOIN courses c ON
+    ct.course_id = c.id
+JOIN DEGREES deg ON
+    c.degree_id = deg.id
+WHERE
+    deg.department_id = 5
+ORDER BY
+    t.name ASC;
+
+
+7. BONUS: Selezionare per ogni studente il numero di tentativi sostenuti
+per ogni esame, stampando anche il voto massimo. Successivamente,
+filtrare i tentativi con voto minimo 18.
+
+SELECT 
+    s.registration_number, 
+    s.name, 
+    s.surname, 
+    c.name AS course_name, 
+    COUNT(*) AS attempts, 
+    MAX(es.vote) AS max_grade
+FROM 
+    students s
+JOIN 
+    exam_student es ON s.id = es.student_id
+JOIN 
+    exams e ON es.exam_id = e.id
+JOIN 
+    courses c ON c.id = e.course_id
+WHERE 
+    es.vote >= 18
+GROUP BY 
+    s.registration_number, 
+    s.name, 
+    s.surname, 
+    c.name;
